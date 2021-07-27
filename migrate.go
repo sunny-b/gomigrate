@@ -28,10 +28,12 @@ func AddMigration(m *Migration) {
 	migrations.PushBack(m)
 }
 
-func AddMigrations(steps ...*Migration) {
+func AddMigrations(steps ...*Migration) []*Migration {
 	for _, m := range steps {
 		AddMigration(m)
 	}
+
+	return steps
 }
 
 func Run(ctx context.Context, db *sql.DB) (uint64, error) {
