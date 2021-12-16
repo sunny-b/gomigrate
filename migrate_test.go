@@ -1,34 +1,38 @@
 package gomigrate
 
 import (
+	"container/list"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddMigration(t *testing.T) {
-	assert.Equal(t, 0, migrations.Len())
+	m := &Migrator{
+		migrations: list.New().Init(),
+	}
+	assert.Equal(t, 0, m.migrations.Len())
 
 	tests := []struct {
 		name    string
 		in      *Migration
-		version uint64
+		version int64
 	}{
 		{
 			name: "first",
 			in: &Migration{
-				Name:            "first",
-				SimpleMigration: "CREATE TABLE test (id INT);",
-				SimpleRollback:  "DROP TABLE test",
+				Name: "first",
+				Up:   "CREATE TABLE test (id INT);",
+				Down: "DROP TABLE test",
 			},
 			version: 1,
 		},
 		{
 			name: "second",
 			in: &Migration{
-				Name:            "second",
-				SimpleMigration: "ALTER TABLE test ADD COLUMN test INT;",
-				SimpleRollback:  "ALTER TABLE test DROP COLUMN test;",
+				Name: "second",
+				Up:   "ALTER TABLE test ADD COLUMN test INT;",
+				Down: "ALTER TABLE test DROP COLUMN test;",
 			},
 			version: 2,
 		},
@@ -36,8 +40,8 @@ func TestAddMigration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			AddMigration(tt.in)
-			assert.Equal(t, tt.version, uint64(migrations.Len()))
+			m.AddMigration(tt.in)
+			assert.Equal(t, tt.version, int64(m.migrations.Len()))
 			assert.Equal(t, tt.version, tt.in.version)
 		})
 	}
